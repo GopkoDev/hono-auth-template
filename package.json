@@ -2,15 +2,23 @@
   "name": "tg-chat-back",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts"
+    "dev": "tsx watch server.ts",
+    "dev-db": "docker compose up -d && tsx watch server.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.14.0",
+    "@prisma/client": "^6.5.0",
+    "bcrypt": "^5.1.1",
     "dotenv": "16.4.7",
-    "hono": "^4.7.5"
+    "hono": "^4.7.5",
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^20.11.17",
+    "prisma": "^6.5.0",
     "tsx": "^4.7.1"
   }
 }
