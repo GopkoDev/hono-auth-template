@@ -22,8 +22,6 @@ export const config = {
   jwt: {
     secret: requireEnv('JWT_SECRET'),
     refreshSecret: requireEnv('REFRESH_SECRET'),
-    accessTokenExpiry: requireEnv('ACCESS_TOKEN_EXPIRY'),
-    refreshTokenExpiry: requireEnv('REFRESH_TOKEN_EXPIRY'),
   },
   smtp: {
     service: requireEnv('SMTP_SERVICE'),

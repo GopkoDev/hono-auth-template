@@ -2,7 +2,7 @@ import type { Context } from 'hono';
 import { setCookie, getCookie, deleteCookie } from 'hono/cookie';
 import { compare, hash } from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { Prisma } from '@prisma/client'; // Додайте цей імпорт
+import { Prisma } from '@prisma/client';
 import { db } from '../../lib/db.js';
 import {
   generateMailPin,
@@ -13,6 +13,15 @@ import { sendEmail } from '../../lib/sendEmail.js';
 import { verificationMail } from '../../mails/auth/verify-email.js';
 import { resetPasswordMail } from '../../mails/auth/reset-password.js';
 import { config } from '../../../envconfig.js';
+import { AUTH_CONFIG } from '../../config/auth.js';
+
+const {
+  REFRESH_TOKEN_EXPIRY,
+  VERIFICATION_EXPIRY,
+  PASSWORD_RESET_EXPIRY,
+  COOKIE_KEY,
+  COOKIE_OPTIONS: { httpOnly, secure, sameSite, path, maxAge },
+} = AUTH_CONFIG;
 
 export class AuthController {
   async register(c: Context) {
@@ -42,7 +51,7 @@ export class AuthController {
               token: verificationToken,
               pin: verificationPin,
               email,
-              expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
+              expiresAt: new Date(Date.now() + VERIFICATION_EXPIRY),
             },
           }),
         ],
@@ -94,16 +103,16 @@ export class AuthController {
         data: {
           token: refreshToken,
           userId: user.id,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY),
         },
       });
 
-      setCookie(c, 'refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'Strict',
-        path: '/api/auth',
-        maxAge: 7 * 24 * 60 * 60, // 7 days
+      setCookie(c, COOKIE_KEY, refreshToken, {
+        httpOnly: httpOnly,
+        secure: secure,
+        sameSite: sameSite,
+        path: path,
+        maxAge: maxAge,
       });
       return c.json({
         accessToken,
@@ -117,7 +126,7 @@ export class AuthController {
 
   async logout(c: Context) {
     try {
-      const refreshToken = getCookie(c, 'refreshToken');
+      const refreshToken = getCookie(c, COOKIE_KEY);
       if (!refreshToken) {
         return c.json({ error: 'Already logged out' }, 400);
       }
@@ -130,9 +139,9 @@ export class AuthController {
         await db.refreshToken.delete({ where: { token: refreshToken } });
       }
 
-      // Видаляємо cookie в будь-якому випадку
-      deleteCookie(c, 'refreshToken', {
-        path: '/api/auth',
+      deleteCookie(c, COOKIE_KEY, {
+        path: path,
+        secure: secure,
       });
 
       return c.json({ message: 'Logged out successfully' });
@@ -144,7 +153,7 @@ export class AuthController {
 
   async refresh(c: Context) {
     try {
-      const refreshToken = getCookie(c, 'refreshToken');
+      const refreshToken = getCookie(c, COOKIE_KEY);
       if (!refreshToken) return c.json({ error: 'No refresh token' }, 401);
 
       const payload = jwt.verify(refreshToken, config.jwt.refreshSecret) as {
@@ -163,16 +172,16 @@ export class AuthController {
         where: { id: dbToken.id },
         data: {
           token: newRefreshToken,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY),
         },
       });
 
-      setCookie(c, 'refreshToken', newRefreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'Strict',
-        path: '/api/auth',
-        maxAge: 7 * 24 * 60 * 60, // 7 days
+      setCookie(c, COOKIE_KEY, newRefreshToken, {
+        httpOnly: httpOnly,
+        secure: secure,
+        sameSite: sameSite,
+        path: path,
+        maxAge: maxAge,
       });
       return c.json({ accessToken });
     } catch (error) {
@@ -233,16 +242,16 @@ export class AuthController {
         data: {
           token: refreshToken,
           userId: user.id,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY),
         },
       });
 
-      setCookie(c, 'refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'Strict',
-        path: '/api/auth',
-        maxAge: 7 * 24 * 60 * 60, // 7 days
+      setCookie(c, COOKIE_KEY, refreshToken, {
+        httpOnly: httpOnly,
+        secure: secure,
+        sameSite: sameSite,
+        path: path,
+        maxAge: maxAge,
       });
 
       return c.json({
@@ -282,7 +291,7 @@ export class AuthController {
           data: {
             token: verificationToken,
             pin: verificationPin,
-            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            expiresAt: new Date(Date.now() + VERIFICATION_EXPIRY),
           },
         });
       } else {
@@ -291,7 +300,7 @@ export class AuthController {
             token: verificationToken,
             pin: verificationPin,
             email,
-            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            expiresAt: new Date(Date.now() + VERIFICATION_EXPIRY),
           },
         });
       }
@@ -336,12 +345,12 @@ export class AuthController {
           email,
           token: resetToken,
           pin: resetPin,
-          expiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000), // 1h
+          expiresAt: new Date(Date.now() + PASSWORD_RESET_EXPIRY),
         },
         update: {
           token: resetToken,
           pin: resetPin,
-          expiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000), // 1h
+          expiresAt: new Date(Date.now() + PASSWORD_RESET_EXPIRY),
         },
       });
 

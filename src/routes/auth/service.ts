@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import type { Secret, SignOptions } from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { config } from '../../../envconfig.js';
+import { AUTH_CONFIG } from '../../config/auth.js';
 
 export const generateTokens = (
   userId: string
@@ -13,7 +14,7 @@ export const generateTokens = (
     { userId },
     config.jwt.secret as Secret,
     {
-      expiresIn: config.jwt.accessTokenExpiry,
+      expiresIn: AUTH_CONFIG.ACCESS_TOKEN_EXPIRY,
     } as SignOptions
   );
 
@@ -21,7 +22,7 @@ export const generateTokens = (
     { userId },
     config.jwt.refreshSecret as Secret,
     {
-      expiresIn: config.jwt.refreshTokenExpiry,
+      expiresIn: AUTH_CONFIG.REFRESH_TOKEN_EXPIRY,
     } as SignOptions
   );
 
