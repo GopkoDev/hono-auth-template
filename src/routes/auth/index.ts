@@ -1,5 +1,8 @@
 import { Hono } from 'hono';
+import { zodValidator } from '../../middlewares/zodValidator.js';
+
 import { AuthController } from './controller.js';
+
 import {
   emailVerifySchema,
   loginSchema,
@@ -8,20 +11,19 @@ import {
   resetPasswordSchema,
   forgotPasswordSchema,
 } from './validation.js';
-import { zodValidator } from '../../middlewares/zodValidator.js';
 
 const authRoutes = new Hono();
 const auth = new AuthController();
+
+authRoutes.post('/login', zodValidator({ body: loginSchema }), auth.login);
+authRoutes.post('/logout', auth.logout);
+authRoutes.post('/refresh', auth.refresh);
 
 authRoutes.post(
   '/register',
   zodValidator({ body: registerSchema }),
   auth.register
 );
-
-authRoutes.post('/login', zodValidator({ body: loginSchema }), auth.login);
-authRoutes.post('/logout', auth.logout);
-authRoutes.post('/refresh', auth.refresh);
 
 authRoutes.post(
   '/verify-mail',

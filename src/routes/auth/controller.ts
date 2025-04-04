@@ -1,428 +1,209 @@
 import type { Context } from 'hono';
 import { setCookie, getCookie, deleteCookie } from 'hono/cookie';
-import { compare, hash } from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import { Prisma } from '@prisma/client';
-import { db } from '../../lib/db.js';
-import {
-  generateMailPin,
-  generateUuidToken,
-  generateTokens,
-} from './service.js';
-import { sendEmail } from '../../lib/sendEmail.js';
-import { verificationMail } from '../../mails/auth/verify-email.js';
-import { resetPasswordMail } from '../../mails/auth/reset-password.js';
-import { config } from '../../../envconfig.js';
-import { AUTH_CONFIG } from '../../config/auth.js';
+import { AuthService } from './service.js';
+import { AUTH_CONFIG } from './constants.js';
 
 const {
-  REFRESH_TOKEN_EXPIRY,
-  VERIFICATION_EXPIRY,
-  PASSWORD_RESET_EXPIRY,
   COOKIE_KEY,
   COOKIE_OPTIONS: { httpOnly, secure, sameSite, path, maxAge },
 } = AUTH_CONFIG;
 
 export class AuthController {
-  async register(c: Context) {
+  private authService: AuthService;
+
+  constructor() {
+    this.authService = new AuthService();
+  }
+
+  public register = async (c: Context) => {
     try {
       const { name, email, password } = c.get('validator').body;
 
-      const existingUser = await db.user.findUnique({ where: { email } });
-      if (existingUser) {
-        return c.json({ error: 'User already exists' }, 400);
+      const result = await this.authService.registerUser(name, email, password);
+
+      if (!result.success) {
+        return c.json({ error: result.error }, 400);
       }
 
-      const hashedPassword = await hash(password, 10);
-      const verificationToken = generateUuidToken();
-      const verificationPin = generateMailPin();
-
-      await db.$transaction(
-        [
-          db.user.create({
-            data: {
-              name,
-              email,
-              password: hashedPassword,
-            },
-          }),
-          db.emailVerificationToken.create({
-            data: {
-              token: verificationToken,
-              pin: verificationPin,
-              email,
-              expiresAt: new Date(Date.now() + VERIFICATION_EXPIRY),
-            },
-          }),
-        ],
-        {
-          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-        }
-      );
-
-      const verificationLink = `${config.server.frontendUrl}/verify-mail?token=${verificationToken}`;
-      const emailContent = verificationMail({
-        link: verificationLink,
-        pin: verificationPin,
-      });
-
-      await sendEmail({
-        email,
-        subject: 'Verify your email',
-        html: emailContent,
-      });
-
-      return c.json({
-        message: 'User created successfully. Please verify your email.',
-      });
+      return c.json({ message: result.message });
     } catch (error) {
       console.error('[REGISTER] Error:', error);
       return c.json({ error: 'Internal server error' }, 500);
     }
-  }
+  };
 
-  async login(c: Context) {
+  public login = async (c: Context) => {
     try {
       const { email, password } = c.get('validator').body;
 
-      const user = await db.user.findUnique({ where: { email } });
+      const result = await this.authService.loginUser(email, password);
 
-      if (!user || !(await compare(password, user.password || ''))) {
-        return c.json({ error: 'Invalid credentials' }, 401);
+      if (!result.success) {
+        if (result.canResend) {
+          return c.json({ error: result.error, canResend: true, email }, 401);
+        }
+        return c.json({ error: result.error }, 401);
       }
 
-      if (!user.emailVerified) {
-        return c.json(
-          { error: 'Email not verified', canResend: true, email },
-          401
-        );
-      }
-
-      const { accessToken, refreshToken } = generateTokens(user.id);
-      await db.refreshToken.create({
-        data: {
-          token: refreshToken,
-          userId: user.id,
-          expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY),
-        },
+      setCookie(c, COOKIE_KEY, result.tokens!.refreshToken, {
+        httpOnly,
+        secure,
+        sameSite,
+        path,
+        maxAge,
       });
 
-      setCookie(c, COOKIE_KEY, refreshToken, {
-        httpOnly: httpOnly,
-        secure: secure,
-        sameSite: sameSite,
-        path: path,
-        maxAge: maxAge,
-      });
       return c.json({
-        accessToken,
-        user: { id: user.id, name: user.name, email: user.email },
+        accessToken: result.tokens!.accessToken,
+        user: result.user,
       });
     } catch (error) {
       console.error('[LOGIN] Error:', error);
       return c.json({ error: 'Internal server error' }, 500);
     }
-  }
+  };
 
-  async logout(c: Context) {
+  public logout = async (c: Context) => {
     try {
       const refreshToken = getCookie(c, COOKIE_KEY);
-      if (!refreshToken) {
-        return c.json({ error: 'Already logged out' }, 400);
-      }
+      const result = await this.authService.logoutUser(refreshToken);
 
-      const existingToken = await db.refreshToken.findUnique({
-        where: { token: refreshToken },
-      });
-
-      if (existingToken) {
-        await db.refreshToken.delete({ where: { token: refreshToken } });
+      if (!result.success) {
+        return c.json({ error: result.error }, 400);
       }
 
       deleteCookie(c, COOKIE_KEY, {
-        path: path,
-        secure: secure,
+        path,
+        secure,
       });
 
-      return c.json({ message: 'Logged out successfully' });
+      return c.json({ message: result.message });
     } catch (error) {
       console.error('[LOGOUT] Error:', error);
       return c.json({ error: 'Internal server error' }, 500);
     }
-  }
+  };
 
-  async refresh(c: Context) {
+  public refresh = async (c: Context) => {
     try {
       const refreshToken = getCookie(c, COOKIE_KEY);
-      if (!refreshToken) return c.json({ error: 'No refresh token' }, 401);
 
-      const payload = jwt.verify(refreshToken, config.jwt.refreshSecret) as {
-        userId: string;
-      };
-      const dbToken = await db.refreshToken.findUnique({
-        where: { token: refreshToken },
+      const result = await this.authService.refreshAccessToken(refreshToken);
+
+      if (!result.success) {
+        return c.json({ error: result.error }, 401);
+      }
+
+      setCookie(c, COOKIE_KEY, result.newRefreshToken!, {
+        httpOnly,
+        secure,
+        sameSite,
+        path,
+        maxAge,
       });
 
-      if (!dbToken) return c.json({ error: 'Invalid refresh token' }, 401);
-      const { accessToken, refreshToken: newRefreshToken } = generateTokens(
-        payload.userId
-      );
-
-      await db.refreshToken.update({
-        where: { id: dbToken.id },
-        data: {
-          token: newRefreshToken,
-          expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY),
-        },
-      });
-
-      setCookie(c, COOKIE_KEY, newRefreshToken, {
-        httpOnly: httpOnly,
-        secure: secure,
-        sameSite: sameSite,
-        path: path,
-        maxAge: maxAge,
-      });
-      return c.json({ accessToken });
+      return c.json({ accessToken: result.accessToken });
     } catch (error) {
       console.error('[REFRESH] Error:', error);
       return c.json({ error: '[REFRESH] Internal server error' }, 500);
     }
-  }
+  };
 
-  async verifyEmailToken(c: Context) {
+  public verifyEmailToken = async (c: Context) => {
     try {
       const { pin, token } = c.get('validator').body;
 
-      const verificationToken = await db.emailVerificationToken.findUnique({
-        where: { token },
-      });
+      const result = await this.authService.verifyEmail(pin, token);
 
-      if (!verificationToken) return c.json({ error: 'Invalid token' }, 400);
-
-      if (verificationToken.expiresAt < new Date()) {
-        await db.emailVerificationToken.delete({
-          where: { token },
-        });
-
-        return c.json(
-          {
-            error: 'Verification token has expired. Please request a new one.',
-            canResend: true,
-            email: verificationToken.email,
-          },
-          400
-        );
+      if (!result.success) {
+        if (result.canResend) {
+          return c.json(
+            {
+              error: result.error,
+              canResend: true,
+              email: result.email,
+            },
+            400
+          );
+        }
+        return c.json({ error: result.error }, 400);
       }
 
-      if (verificationToken.pin !== pin)
-        return c.json({ error: 'Invalid pin' }, 400);
-
-      const user = await db.user.findUnique({
-        where: { email: verificationToken.email },
-      });
-
-      if (!user) return c.json({ error: 'User not found' }, 404);
-
-      if (user.emailVerified)
-        return c.json({ error: 'User already verified' }, 400);
-
-      await db.user.update({
-        where: { email: verificationToken.email },
-        data: { emailVerified: new Date() },
-      });
-
-      await db.emailVerificationToken.delete({
-        where: { token },
-      });
-
-      const { accessToken, refreshToken } = generateTokens(user.id);
-
-      await db.refreshToken.create({
-        data: {
-          token: refreshToken,
-          userId: user.id,
-          expiresAt: new Date(Date.now() + REFRESH_TOKEN_EXPIRY),
-        },
-      });
-
-      setCookie(c, COOKIE_KEY, refreshToken, {
-        httpOnly: httpOnly,
-        secure: secure,
-        sameSite: sameSite,
-        path: path,
-        maxAge: maxAge,
+      setCookie(c, COOKIE_KEY, result.tokens!.refreshToken, {
+        httpOnly,
+        secure,
+        sameSite,
+        path,
+        maxAge,
       });
 
       return c.json({
-        message: 'Email verified successfully',
-        accessToken,
-        user: { id: user.id, name: user.name, email: user.email },
+        message: result.message,
+        accessToken: result.tokens!.accessToken,
+        user: result.user,
       });
     } catch (error) {
       console.error('[VERIFY EMAIL] Error:', error);
       return c.json({ error: 'Internal server error' }, 500);
     }
-  }
+  };
 
-  async verifyEmailTokenResend(c: Context) {
+  public verifyEmailTokenResend = async (c: Context) => {
     try {
       const { email } = c.get('validator').body;
 
-      const user = await db.user.findUnique({ where: { email } });
-      if (!user) {
-        return c.json({ error: 'User not found' }, 404);
+      const result = await this.authService.resendVerificationEmail(email);
+
+      if (!result.success) {
+        return c.json({ error: result.error }, 400);
       }
-
-      if (user.emailVerified) {
-        return c.json({ error: 'Email already verified' }, 400);
-      }
-
-      const verificationToken = generateUuidToken();
-      const verificationPin = generateMailPin();
-
-      const existingToken = await db.emailVerificationToken.findFirst({
-        where: { email },
-      });
-
-      if (existingToken) {
-        await db.emailVerificationToken.update({
-          where: { id: existingToken.id },
-          data: {
-            token: verificationToken,
-            pin: verificationPin,
-            expiresAt: new Date(Date.now() + VERIFICATION_EXPIRY),
-          },
-        });
-      } else {
-        await db.emailVerificationToken.create({
-          data: {
-            token: verificationToken,
-            pin: verificationPin,
-            email,
-            expiresAt: new Date(Date.now() + VERIFICATION_EXPIRY),
-          },
-        });
-      }
-
-      const verificationLink = `${config.server.frontendUrl}/verify-mail?token=${verificationToken}`;
-      const emailContent = verificationMail({
-        link: verificationLink,
-        pin: verificationPin,
-      });
-
-      await sendEmail({
-        email,
-        subject: 'Verify your email',
-        html: emailContent,
-      });
 
       return c.json({
-        message: 'Verification email sent successfully',
+        message: result.message,
         email,
       });
     } catch (error) {
       console.error('[VERIFY EMAIL RESEND] Error:', error);
       return c.json({ error: 'Internal server error' }, 500);
     }
-  }
+  };
 
-  async forgotPassword(c: Context) {
+  public forgotPassword = async (c: Context) => {
     try {
       const { email } = c.get('validator').body;
 
-      const user = await db.user.findUnique({ where: { email } });
-      if (!user) {
-        return c.json({ error: 'User not found' }, 404);
+      const result = await this.authService.forgotPassword(email);
+
+      if (!result.success) {
+        return c.json({ error: result.error }, 400);
       }
 
-      const resetToken = generateUuidToken();
-      const resetPin = generateMailPin();
-
-      await db.passwordResetToken.upsert({
-        where: { email_token: { email, token: resetToken } },
-        create: {
-          email,
-          token: resetToken,
-          pin: resetPin,
-          expiresAt: new Date(Date.now() + PASSWORD_RESET_EXPIRY),
-        },
-        update: {
-          token: resetToken,
-          pin: resetPin,
-          expiresAt: new Date(Date.now() + PASSWORD_RESET_EXPIRY),
-        },
-      });
-
-      const resetLink = `${config.server.frontendUrl}/reset-password?token=${resetToken}`;
-      const emailContent = resetPasswordMail({
-        url: resetLink,
-        pin: resetPin,
-      });
-
-      await sendEmail({
-        email,
-        subject: 'Reset your password',
-        html: emailContent,
-      });
-
       return c.json({
-        message: 'Password reset instructions sent to your email',
+        message: result.message,
         email,
       });
     } catch (error) {
       console.error('[FORGOT PASSWORD] Error:', error);
       return c.json({ error: 'Internal server error' }, 500);
     }
-  }
+  };
 
-  async resetPassword(c: Context) {
+  public resetPassword = async (c: Context) => {
     try {
       const { token, pin, password } = c.get('validator').body;
 
-      const resetToken = await db.passwordResetToken.findUnique({
-        where: { token },
-      });
+      const result = await this.authService.resetPassword(token, pin, password);
 
-      if (!resetToken) {
-        return c.json({ error: 'Invalid reset token' }, 400);
+      if (!result.success) {
+        return c.json({ error: result.error }, 400);
       }
-
-      if (resetToken.expiresAt < new Date()) {
-        await db.passwordResetToken.delete({ where: { token } });
-        return c.json({ error: 'Reset token has expired' }, 400);
-      }
-
-      if (resetToken.pin !== pin) {
-        return c.json({ error: 'Invalid PIN code' }, 400);
-      }
-
-      const hashedPassword = await hash(password, 10);
-
-      await db.$transaction(
-        [
-          db.user.update({
-            where: { email: resetToken.email },
-            data: { password: hashedPassword },
-          }),
-          db.refreshToken.deleteMany({
-            where: { user: { email: resetToken.email } },
-          }),
-          db.passwordResetToken.delete({
-            where: { token },
-          }),
-        ],
-        {
-          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-        }
-      );
 
       return c.json({
-        message: 'Password reset successfully',
+        message: result.message,
       });
     } catch (error) {
       console.error('[RESET PASSWORD] Error:', error);
       return c.json({ error: 'Internal server error' }, 500);
     }
-  }
+  };
 }

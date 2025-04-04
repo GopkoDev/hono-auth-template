@@ -1,6 +1,7 @@
 import type { Context, Next } from 'hono';
 import jwt from 'jsonwebtoken';
 import { config } from '../../envconfig.js';
+import { AuthService } from '../routes/auth/service.js';
 
 declare module 'hono' {
   interface ContextVariables {
@@ -16,9 +17,20 @@ export const authMiddleware = async (c: Context, next: Next) => {
     }
 
     const token = authHeader.split(' ')[1];
-    const payload = jwt.verify(token, config.jwt.secret) as { userId: string };
-    c.set('userId', payload.userId);
+    const authService = new AuthService();
+    const result = authService.verifyToken(token);
 
+    if (!result.valid) {
+      return c.json(
+        {
+          error: 'Invalid token',
+          code: 'TOKEN_INVALID',
+        },
+        401
+      );
+    }
+
+    c.set('userId', result.userId!);
     await next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
