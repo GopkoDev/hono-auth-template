@@ -18,6 +18,7 @@ model User {
   name          String?
   email         String?        @unique
   password      String?
+  emailVerified DateTime?      @map("email_verified")
   refreshTokens RefreshToken[]
 
   createdAt DateTime @default(now())
@@ -35,4 +36,29 @@ model RefreshToken {
   updatedAt DateTime @updatedAt
 
   @@map("refresh_tokens")
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  pin       String
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+
+  @@unique([email, token])
+  @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  pin       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([email, token])
+  @@map("password_reset_tokens")
 }

@@ -1,12 +1,52 @@
 import { Hono } from 'hono';
 import { AuthController } from './controller.js';
+import {
+  emailVerifySchema,
+  loginSchema,
+  registerSchema,
+  resendEmailTokenSchema,
+  resetPasswordSchema,
+  forgotPasswordSchema,
+} from './validation.js';
+import { zodValidator } from '../../middlewares/zodValidator.js';
 
 const authRoutes = new Hono();
-const authController = new AuthController();
+const auth = new AuthController();
 
-authRoutes.post('/register', authController.register);
-authRoutes.post('/login', authController.login);
-authRoutes.post('/logout', authController.logout);
-authRoutes.post('/refresh', authController.refresh);
+authRoutes.post(
+  '/register',
+  zodValidator({ body: registerSchema }),
+  auth.register
+);
+
+authRoutes.post('/login', zodValidator({ body: loginSchema }), auth.login);
+authRoutes.post('/logout', auth.logout);
+authRoutes.post('/refresh', auth.refresh);
+
+authRoutes.post(
+  '/verify-mail',
+  zodValidator({
+    body: emailVerifySchema,
+  }),
+  auth.verifyEmailToken
+);
+
+authRoutes.post(
+  '/resend-verify-mail',
+  zodValidator({ body: resendEmailTokenSchema }),
+  auth.verifyEmailTokenResend
+);
+
+authRoutes.post(
+  '/forgot-password',
+  zodValidator({ body: forgotPasswordSchema }),
+  auth.forgotPassword
+);
+
+authRoutes.post(
+  '/reset-password',
+  zodValidator({ body: resetPasswordSchema }),
+  auth.resetPassword
+);
 
 export { authRoutes };
