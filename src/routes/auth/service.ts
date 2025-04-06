@@ -328,7 +328,12 @@ export class AuthService {
 
   public async resendVerificationEmail(
     email: string
-  ): Promise<{ success: boolean; message?: string; error?: string }> {
+  ): Promise<{
+    success: boolean;
+    message?: string;
+    error?: string;
+    path?: string;
+  }> {
     try {
       const user = await db.user.findUnique({ where: { email } });
       if (!user) {
@@ -368,7 +373,10 @@ export class AuthService {
         });
       }
 
-      const verificationLink = `${config.server.frontendUrl}/verify-mail?token=${verificationToken}`;
+      const verificationPath = `/confirm-email/${verificationToken}?email=${encodeURIComponent(
+        email
+      )}`;
+      const verificationLink = `${config.server.frontendUrl}${verificationPath}`;
       const emailContent = verificationMail({
         link: verificationLink,
         pin: verificationPin,
@@ -383,6 +391,7 @@ export class AuthService {
       return {
         success: true,
         message: 'Verification email sent successfully',
+        path: verificationPath,
       };
     } catch (error) {
       console.error('[VERIFY EMAIL RESEND] Error:', error);

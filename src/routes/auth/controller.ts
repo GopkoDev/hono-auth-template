@@ -160,7 +160,7 @@ export class AuthController {
 
       return c.json({
         message: result.message,
-        email,
+        path: result.path,
       });
     } catch (error) {
       console.error('[VERIFY EMAIL RESEND] Error:', error);
