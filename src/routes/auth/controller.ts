@@ -25,7 +25,7 @@ export class AuthController {
         return c.json({ error: result.error }, 400);
       }
 
-      return c.json({ message: result.message });
+      return c.json({ message: result.message, path: result.path });
     } catch (error) {
       console.error('[REGISTER] Error:', error);
       return c.json({ error: 'Internal server error' }, 500);

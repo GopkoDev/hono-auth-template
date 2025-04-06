@@ -50,7 +50,12 @@ export class AuthService {
     name: string | undefined,
     email: string,
     password: string
-  ): Promise<{ success: boolean; message?: string; error?: string }> {
+  ): Promise<{
+    success: boolean;
+    path?: string;
+    message?: string;
+    error?: string;
+  }> {
     try {
       const existingUser = await db.user.findUnique({ where: { email } });
       if (existingUser) {
@@ -84,7 +89,10 @@ export class AuthService {
         }
       );
 
-      const verificationLink = `${config.server.frontendUrl}/verify-mail?token=${verificationToken}`;
+      const verificationPath = `/confirm-email/${verificationToken}?email=${encodeURIComponent(
+        email
+      )}`;
+      const verificationLink = `${config.server.frontendUrl}${verificationPath}`;
       const emailContent = verificationMail({
         link: verificationLink,
         pin: verificationPin,
@@ -99,6 +107,7 @@ export class AuthService {
       return {
         success: true,
         message: 'User created successfully. Please verify your email.',
+        path: verificationPath,
       };
     } catch (error) {
       console.error('[REGISTER] Error:', error);
@@ -136,7 +145,9 @@ export class AuthService {
         data: {
           token: tokens.refreshToken,
           userId: user.id,
-          expiresAt: new Date(Date.now() + AUTH_CONFIG.REFRESH_TOKEN_EXPIRY),
+          expiresAt: new Date(
+            Date.now() + AUTH_CONFIG.REFRESH_TOKEN_EXPIRY * 1000
+          ),
         },
       });
 
@@ -207,7 +218,9 @@ export class AuthService {
         where: { id: dbToken.id },
         data: {
           token: tokens.refreshToken,
-          expiresAt: new Date(Date.now() + AUTH_CONFIG.REFRESH_TOKEN_EXPIRY),
+          expiresAt: new Date(
+            Date.now() + AUTH_CONFIG.REFRESH_TOKEN_EXPIRY * 1000
+          ),
         },
       });
 
@@ -291,7 +304,7 @@ export class AuthService {
               token: tokens.refreshToken,
               userId: user.id,
               expiresAt: new Date(
-                Date.now() + AUTH_CONFIG.REFRESH_TOKEN_EXPIRY
+                Date.now() + AUTH_CONFIG.REFRESH_TOKEN_EXPIRY * 1000
               ),
             },
           }),
@@ -339,7 +352,9 @@ export class AuthService {
           data: {
             token: verificationToken,
             pin: verificationPin,
-            expiresAt: new Date(Date.now() + AUTH_CONFIG.VERIFICATION_EXPIRY),
+            expiresAt: new Date(
+              Date.now() + AUTH_CONFIG.VERIFICATION_EXPIRY * 1000
+            ),
           },
         });
       } else {
@@ -393,12 +408,16 @@ export class AuthService {
           email,
           token: resetToken,
           pin: resetPin,
-          expiresAt: new Date(Date.now() + AUTH_CONFIG.PASSWORD_RESET_EXPIRY),
+          expiresAt: new Date(
+            Date.now() + AUTH_CONFIG.PASSWORD_RESET_EXPIRY * 1000
+          ),
         },
         update: {
           token: resetToken,
           pin: resetPin,
-          expiresAt: new Date(Date.now() + AUTH_CONFIG.PASSWORD_RESET_EXPIRY),
+          expiresAt: new Date(
+            Date.now() + AUTH_CONFIG.PASSWORD_RESET_EXPIRY * 1000
+          ),
         },
       });
 

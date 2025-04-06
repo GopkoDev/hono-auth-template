@@ -1,22 +1,24 @@
+import { config } from '../../../envconfig.js';
+
 const TIME = {
-  SECOND: 1000,
-  MINUTE: 60 * 1000,
-  HOUR: 60 * 60 * 1000,
-  DAY: 24 * 60 * 60 * 1000,
+  SECOND: 1, // 1s
+  MINUTE: 60, // 60 s
+  HOUR: 60 * 60, // 3600 s
+  DAY: 24 * 60 * 60, // 86400 s
 } as const;
 
 export const AUTH_CONFIG = {
-  ACCESS_TOKEN_EXPIRY: 4 * TIME.HOUR, // 4h
-  REFRESH_TOKEN_EXPIRY: 7 * TIME.DAY, // 7d
-  VERIFICATION_EXPIRY: 24 * TIME.HOUR, // 24h
-  PASSWORD_RESET_EXPIRY: 1 * TIME.HOUR, // 1h
+  ACCESS_TOKEN_EXPIRY: 1 * TIME.HOUR, // 1m in seconds
+  REFRESH_TOKEN_EXPIRY: 7 * TIME.DAY, // 7d in seconds
+  VERIFICATION_EXPIRY: 24 * TIME.HOUR, // 24h in miliseconds
+  PASSWORD_RESET_EXPIRY: 1 * TIME.HOUR, // 1h in miliseconds
 
   COOKIE_KEY: 'refreshToken',
   COOKIE_OPTIONS: {
     httpOnly: true,
-    secure: true,
-    sameSite: 'Strict' as const,
+    secure: config.server.nodeEnv === 'development' ? false : true,
+    sameSite: 'Lax',
     path: '/api/auth',
-    maxAge: 7 * TIME.DAY, // 7d
+    maxAge: 7 * TIME.DAY,
   },
 } as const;

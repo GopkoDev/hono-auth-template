@@ -1,22 +1,23 @@
 import { db } from '../../../lib/db.js';
 import type { Context } from 'hono';
-import { AuthService } from './service.js';
+import { UserService } from './service.js';
 
 export class UserController {
-  private authService: AuthService;
+  private userService: UserService;
 
   constructor() {
-    this.authService = new AuthService();
+    this.userService = new UserService();
   }
-  async get(c: Context) {
+
+  public get = async (c: Context) => {
     const userId = c.get('userId');
 
-    const result = await this.authService.findUser({ userId });
+    const result = await this.userService.findUser({ userId });
 
     if (!result.success) {
       return c.json({ error: result.message }, 404);
     }
 
     return c.json({ user: result.user });
-  }
+  };
 }

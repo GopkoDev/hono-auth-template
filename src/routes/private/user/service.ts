@@ -1,7 +1,7 @@
 import type { User } from '@prisma/client';
 import { db } from '../../../lib/db.js';
 
-export class AuthService {
+export class UserService {
   public async findUser({
     userId,
   }: {
