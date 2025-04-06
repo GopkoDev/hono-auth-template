@@ -390,9 +390,12 @@ export class AuthService {
     }
   }
 
-  public async forgotPassword(
-    email: string
-  ): Promise<{ success: boolean; message?: string; error?: string }> {
+  public async forgotPassword(email: string): Promise<{
+    success: boolean;
+    message?: string;
+    error?: string;
+    path?: string;
+  }> {
     try {
       const user = await db.user.findUnique({ where: { email } });
       if (!user) {
@@ -421,7 +424,8 @@ export class AuthService {
         },
       });
 
-      const resetLink = `${config.server.frontendUrl}/reset-password?token=${resetToken}`;
+      const resetPath = `/reset-password/${resetToken}`;
+      const resetLink = `${config.server.frontendUrl}${resetPath}`;
       const emailContent = resetPasswordMail({
         url: resetLink,
         pin: resetPin,
@@ -436,6 +440,7 @@ export class AuthService {
       return {
         success: true,
         message: 'Password reset instructions sent to your email',
+        path: resetPath,
       };
     } catch (error) {
       console.error('[FORGOT PASSWORD] Error:', error);

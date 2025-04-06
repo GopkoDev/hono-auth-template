@@ -181,6 +181,7 @@ export class AuthController {
       return c.json({
         message: result.message,
         email,
+        path: result.path,
       });
     } catch (error) {
       console.error('[FORGOT PASSWORD] Error:', error);
