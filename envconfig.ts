@@ -19,6 +19,11 @@ export const config = {
   db: {
     url: requireEnv('DATABASE_URL'),
   },
+  redis: {
+    host: requireEnv('REDIS_HOST'),
+    port: Number(requireEnv('REDIS_PORT')),
+    password: requireEnv('REDIS_PASSWORD'),
+  },
   jwt: {
     secret: requireEnv('JWT_SECRET'),
     refreshSecret: requireEnv('REFRESH_SECRET'),

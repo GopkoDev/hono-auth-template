@@ -3,19 +3,15 @@ import apiRoutes from './routes/index.js';
 
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
-import { rateLimiter } from 'hono-rate-limiter';
 import { logger } from 'hono/logger';
+import { rateLimiterMiddleware } from './middlewares/rateLimitMiddleware.js';
 
-import {
-  corsConfig,
-  rateLimiterConfig,
-  securityHeadersConfig,
-} from './config/security.js';
+import { corsConfig, securityHeadersConfig } from './config/security.js';
 
 const app = new Hono();
 
 app.use('*', secureHeaders(securityHeadersConfig));
-app.use('/api/auth/*', rateLimiter(rateLimiterConfig));
+app.use('/api/auth/*', rateLimiterMiddleware);
 app.use('*', cors(corsConfig));
 app.use(logger());
 
