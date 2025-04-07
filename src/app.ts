@@ -4,7 +4,7 @@ import apiRoutes from './routes/index.js';
 import { cors } from 'hono/cors';
 import { secureHeaders } from 'hono/secure-headers';
 import { logger } from 'hono/logger';
-import { rateLimiterMiddleware } from './middlewares/rateLimitMiddleware.js';
+import { rateLimiterMiddleware } from './middlewares/rate-limit-middleware.js';
 
 import { corsConfig, securityHeadersConfig } from './config/security.js';
 

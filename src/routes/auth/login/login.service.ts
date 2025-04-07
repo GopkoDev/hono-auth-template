@@ -1,8 +1,8 @@
 import { compare } from 'bcrypt';
 import { db } from '../../../config/db.js';
-import type { Tokens } from '../_helpers/generateTokens.js';
+import type { Tokens } from '../_helpers/generate-tokens.js';
 import type { User } from '@prisma/client';
-import { generateTokens } from '../_helpers/generateTokens.js';
+import { generateTokens } from '../_helpers/generate-tokens.js';
 import { AUTH_CONFIG } from '../constants.js';
 
 interface LoginServiceRequest {

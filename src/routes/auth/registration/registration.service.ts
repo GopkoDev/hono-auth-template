@@ -1,7 +1,7 @@
 import { hash } from 'bcrypt';
 import { db } from '../../../config/db.js';
-import { generateUuidToken } from '../_helpers/generateUuidToken.js';
-import { generateMailPin } from '../_helpers/generateMailPin.js';
+import { generateUuidToken } from '../_helpers/generate-uuid-token.js';
+import { generateMailPin } from '../_helpers/generate-mail-pin.js';
 import { AUTH_CONFIG } from '../constants.js';
 import { Prisma } from '@prisma/client';
 import { config } from '../../../../envconfig.js';

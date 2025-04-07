@@ -3,9 +3,9 @@ import { verifyEmailController } from './verify-email.controller.js';
 import { zodValidator } from '../../../middlewares/zod-validator.js';
 import { emailVerifySchema } from './verify-email.schema.js';
 
-const verifyEmailRouter = new Hono();
+const verifyEmailRoutes = new Hono();
 
-verifyEmailRouter.post(
+verifyEmailRoutes.post(
   '/',
   zodValidator({
     body: emailVerifySchema,
@@ -13,4 +13,4 @@ verifyEmailRouter.post(
   verifyEmailController
 );
 
-export default verifyEmailRouter;
+export default verifyEmailRoutes;

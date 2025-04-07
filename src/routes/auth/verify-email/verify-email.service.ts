@@ -1,5 +1,5 @@
 import { db } from '../../../config/db.js';
-import { generateTokens, type Tokens } from '../_helpers/generateTokens.js';
+import { generateTokens, type Tokens } from '../_helpers/generate-tokens.js';
 import { Prisma, type User } from '@prisma/client';
 import { AUTH_CONFIG } from '../constants.js';
 

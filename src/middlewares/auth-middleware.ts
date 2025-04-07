@@ -1,6 +1,6 @@
 import type { Context, Next } from 'hono';
 import jwt from 'jsonwebtoken';
-import { verifyToken } from '../routes/auth/_helpers/verifyToken.js';
+import { verifyToken } from '../routes/auth/_helpers/verify-token.js';
 
 declare module 'hono' {
   interface ContextVariables {

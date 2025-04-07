@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { zodValidator } from '../../../middlewares/zodValidator.js';
+import { zodValidator } from '../../../middlewares/zod-validator.js';
 import { resetPasswordSchema } from './reset.schema.js';
 import { resetPasswordController } from './reset.controller.js';
 

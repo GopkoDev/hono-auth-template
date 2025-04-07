@@ -2,8 +2,8 @@ import { config } from '../../../../envconfig.js';
 import { db } from '../../../config/db.js';
 import { sendEmail } from '../../../lib/sendEmail.js';
 import { verificationMail } from '../../../mails/auth/verify-email.js';
-import { generateMailPin } from '../_helpers/generateMailPin.js';
-import { generateUuidToken } from '../_helpers/generateUuidToken.js';
+import { generateMailPin } from '../_helpers/generate-mail-pin.js';
+import { generateUuidToken } from '../_helpers/generate-uuid-token.js';
 import { AUTH_CONFIG } from '../constants.js';
 
 interface ResendVerificationEmailRequest {

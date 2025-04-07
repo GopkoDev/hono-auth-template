@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { authMiddleware } from '../../middlewares/authMiddleware.js';
+import { authMiddleware } from '../../middlewares/auth-middleware.js';
 
 import { userRoutes } from './user/index.js';
 

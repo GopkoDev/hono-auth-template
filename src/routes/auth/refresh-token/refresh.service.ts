@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { config } from '../../../../envconfig.js';
 import { db } from '../../../config/db.js';
-import { generateTokens } from '../_helpers/generateTokens.js';
+import { generateTokens } from '../_helpers/generate-tokens.js';
 import { AUTH_CONFIG } from '../constants.js';
 
 interface RefreshTokenServiceRequest {

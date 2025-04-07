@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { registrationController } from './registration.controller.js';
-import { zodValidator } from '../../../middlewares/zodValidator.js';
+import { zodValidator } from '../../../middlewares/zod-validator.js';
 import { registerationSchema } from './registration.schema.js';
 
 const registerationRouter = new Hono();
