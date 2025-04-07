@@ -19,3 +19,4 @@ app.route('/api', apiRoutes);
 app.notFound((c) => c.json({ error: 'Not Found', code: 'NOT_FOUND' }, 404));
 
 export default app;
+export type ApiRoutes = typeof apiRoutes;
