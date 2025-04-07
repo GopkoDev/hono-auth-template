@@ -1,7 +1,6 @@
 import type { Context, Next } from 'hono';
 import jwt from 'jsonwebtoken';
-import { config } from '../../envconfig.js';
-import { AuthService } from '../routes/auth/service.js';
+import { verifyToken } from '../routes/auth/_helpers/verifyToken.js';
 
 declare module 'hono' {
   interface ContextVariables {
@@ -17,8 +16,7 @@ export const authMiddleware = async (c: Context, next: Next) => {
     }
 
     const token = authHeader.split(' ')[1];
-    const authService = new AuthService();
-    const result = authService.verifyToken(token);
+    const result = verifyToken(token);
 
     if (!result.valid) {
       return c.json(

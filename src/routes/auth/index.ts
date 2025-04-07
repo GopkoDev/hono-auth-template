@@ -1,54 +1,22 @@
 import { Hono } from 'hono';
-import { zodValidator } from '../../middlewares/zodValidator.js';
 
-import { AuthController } from './controller.js';
-
-import {
-  emailVerifySchema,
-  loginSchema,
-  registerSchema,
-  resendEmailTokenSchema,
-  resetPasswordSchema,
-  forgotPasswordSchema,
-} from './validation.js';
+import loginRouter from './login/login.routes.js';
+import logoutRouter from './logout/logout.routes.js';
+import registerationRouter from './registration/registration.routes.js';
+import forgotRouter from './forgot-password/forgot.routes.js';
+import resetPasswordRouter from './reset-password/reset.routes.js';
+import verifyEmailRouter from './verify-email/verify-email.routes.js';
+import resenrVerifyEmailRouter from './resend-verify-email/resend-verify-email.routes.js';
 
 const authRoutes = new Hono();
-const auth = new AuthController();
 
-authRoutes.post('/login', zodValidator({ body: loginSchema }), auth.login);
-authRoutes.post('/logout', auth.logout);
-authRoutes.post('/refresh', auth.refresh);
-
-authRoutes.post(
-  '/register',
-  zodValidator({ body: registerSchema }),
-  auth.register
-);
-
-authRoutes.post(
-  '/verify-mail',
-  zodValidator({
-    body: emailVerifySchema,
-  }),
-  auth.verifyEmailToken
-);
-
-authRoutes.post(
-  '/resend-verify-mail',
-  zodValidator({ body: resendEmailTokenSchema }),
-  auth.verifyEmailTokenResend
-);
-
-authRoutes.post(
-  '/forgot-password',
-  zodValidator({ body: forgotPasswordSchema }),
-  auth.forgotPassword
-);
-
-authRoutes.post(
-  '/reset-password',
-  zodValidator({ body: resetPasswordSchema }),
-  auth.resetPassword
-);
+authRoutes.route('/login', loginRouter);
+authRoutes.route('/logout', logoutRouter);
+authRoutes.route('/register', registerationRouter);
+authRoutes.route('/forgot-password', forgotRouter);
+authRoutes.route('/reset-password', resetPasswordRouter);
+authRoutes.route('/refresh', resetPasswordRouter);
+authRoutes.route('/verify-mail', verifyEmailRouter);
+authRoutes.route('/resend-verify-mail', resenrVerifyEmailRouter);
 
 export { authRoutes };
