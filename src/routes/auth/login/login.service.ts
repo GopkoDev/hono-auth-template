@@ -1,5 +1,5 @@
 import { compare } from 'bcrypt';
-import { db } from '../../../lib/db.js';
+import { db } from '../../../config/db.js';
 import type { Tokens } from '../types.js';
 import type { User } from '@prisma/client';
 import { generateTokens } from '../_helpers/generateTokens.js';

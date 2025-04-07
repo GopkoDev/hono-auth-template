@@ -1,5 +1,5 @@
 import { hash } from 'bcrypt';
-import { db } from '../../../lib/db.js';
+import { db } from '../../../config/db.js';
 import { generateUuidToken } from '../_helpers/generateUuidToken.js';
 import { generateMailPin } from '../_helpers/generateMailPin.js';
 import { AUTH_CONFIG } from '../constants.js';

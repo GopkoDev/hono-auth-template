@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { db } from '../../../lib/db.js';
+import { db } from '../../../config/db.js';
 import { hash } from 'bcrypt';
 
 interface resetPasswordServiceRequest {

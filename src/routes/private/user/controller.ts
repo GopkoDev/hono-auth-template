@@ -1,4 +1,4 @@
-import { db } from '../../../lib/db.js';
+import { db } from '../../../config/db.js';
 import type { Context } from 'hono';
 import { UserService } from './service.js';
 

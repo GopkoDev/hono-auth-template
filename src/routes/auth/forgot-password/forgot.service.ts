@@ -1,5 +1,5 @@
 import { config } from '../../../../envconfig.js';
-import { db } from '../../../lib/db.js';
+import { db } from '../../../config/db.js';
 import { sendEmail } from '../../../lib/sendEmail.js';
 import { resetPasswordMail } from '../../../mails/auth/reset-password.js';
 import { generateMailPin } from '../_helpers/generateMailPin.js';

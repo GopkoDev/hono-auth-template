@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { config } from '../../../../envconfig.js';
-import { db } from '../../../lib/db.js';
+import { db } from '../../../config/db.js';
 import { generateTokens } from '../_helpers/generateTokens.js';
 import { AUTH_CONFIG } from '../constants.js';
 

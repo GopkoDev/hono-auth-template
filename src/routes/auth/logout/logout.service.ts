@@ -1,4 +1,4 @@
-import { db } from '../../../lib/db.js';
+import { db } from '../../../config/db.js';
 
 interface LogoutServiceRequest {
   refreshToken: string | undefined;
