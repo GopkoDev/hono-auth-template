@@ -8,7 +8,11 @@ interface MailOptions {
   html: string;
 }
 
-export const sendEmail = async ({ email, subject, html }: MailOptions) => {
+export const sendEmail = async ({
+  email,
+  subject,
+  html,
+}: MailOptions): Promise<void> => {
   const transportOptions: SMTPTransport.Options = {
     service: config.smtp.service,
     host: config.smtp.host,
