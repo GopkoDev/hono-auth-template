@@ -14,13 +14,9 @@ export const redis = new Redis({
   maxRetriesPerRequest: 3,
 });
 
-redis.on('error', (err) => console.error('Redis Client Error:', err));
-redis.on('connect', () => console.log('Redis Client Connected'));
-
-redis.on('ready', () => {
-  console.log('Redis is ready');
-});
+redis.on('error', (err) => console.error('Redis: client rrror:', err));
+redis.on('connect', () => console.log('Redis: successfully connected'));
 
 redis.on('reconnecting', () => {
-  console.log('Redis reconnecting...');
+  console.log('Redis: reconnecting...');
 });
