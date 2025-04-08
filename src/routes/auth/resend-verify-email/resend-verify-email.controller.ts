@@ -5,7 +5,7 @@ export const resendVerifyEmailController = async (c: Context) => {
   try {
     const { email } = c.get('validator').body;
 
-    const result = await resendVerifyEmailService(email);
+    const result = await resendVerifyEmailService({ email });
 
     if (!result.success) {
       return c.json({ error: result.error }, 400);

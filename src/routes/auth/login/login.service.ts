@@ -7,26 +7,26 @@ import { AUTH_CONFIG } from '../constants.js';
 
 interface LoginServiceRequest {
   email: string;
-  password: string;
+  inputPassword: string;
 }
 
 interface LoginServiceResponse {
   success: boolean;
   tokens?: Tokens;
-  user?: User;
+  user?: Omit<User, 'password'>;
   error?: string;
   canResend?: boolean;
 }
 
 export const loginService = async ({
   email,
-  password,
+  inputPassword,
 }: LoginServiceRequest): Promise<LoginServiceResponse> => {
   try {
     const user = await db.user.findUnique({ where: { email } });
 
-    if (!user || !(await compare(password, user.password || ''))) {
-      return { success: false, error: 'Invalid credentials' };
+    if (!user || !(await compare(inputPassword, user.password || ''))) {
+      return { success: false, error: 'Invalid email or password' };
     }
 
     if (!user.emailVerified) {
@@ -48,10 +48,12 @@ export const loginService = async ({
       },
     });
 
+    const { password, ...userWithoutPassword } = user;
+
     return {
       success: true,
       tokens,
-      user,
+      user: userWithoutPassword,
     };
   } catch (error) {
     console.error('[LOGIN] Error:', error);

@@ -12,7 +12,7 @@ interface VerifyEmailServiceResponse {
   success: boolean;
   message?: string;
   tokens?: Tokens;
-  user?: User;
+  user?: Omit<User, 'password'>;
   error?: string;
   canResend?: boolean;
   email?: string;
@@ -86,11 +86,13 @@ export const verifyEmailService = async ({
       }
     );
 
+    const { password, ...userWithoutPassword } = user;
+
     return {
       success: true,
       message: 'Email verified successfully',
       tokens,
-      user,
+      user: userWithoutPassword,
     };
   } catch (error) {
     console.error('[VERIFY EMAIL] Error:', error);

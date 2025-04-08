@@ -12,7 +12,7 @@ export const loginController = async (c: Context) => {
   try {
     const { email, password } = c.get('validator').body;
 
-    const result = await loginService({ email, password });
+    const result = await loginService({ email, inputPassword: password });
 
     if (!result.success) {
       if (result.canResend) {

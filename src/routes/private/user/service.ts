@@ -2,11 +2,11 @@ import type { User } from '@prisma/client';
 import { db } from '../../../config/db.js';
 
 export class UserService {
-  public async findUser({
-    userId,
-  }: {
-    userId: string;
-  }): Promise<{ success: boolean; message?: string; user?: User }> {
+  public async findUser({ userId }: { userId: string }): Promise<{
+    success: boolean;
+    message?: string;
+    user?: Omit<User, 'password'>;
+  }> {
     const user = await db.user.findUnique({
       where: {
         id: userId,
@@ -17,6 +17,8 @@ export class UserService {
       return { success: false, message: 'User not found' };
     }
 
-    return { success: true, user };
+    const { password, ...userWithoutPassword } = user;
+
+    return { success: true, user: userWithoutPassword };
   }
 }
