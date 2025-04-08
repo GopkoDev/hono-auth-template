@@ -8,10 +8,10 @@ const TIME = {
 } as const;
 
 export const AUTH_CONFIG = {
-  ACCESS_TOKEN_EXPIRY: 1 * TIME.HOUR, // 1m in seconds
+  ACCESS_TOKEN_EXPIRY: 1 * TIME.HOUR, // 1h in seconds
   REFRESH_TOKEN_EXPIRY: 7 * TIME.DAY, // 7d in seconds
-  VERIFICATION_EXPIRY: 24 * TIME.HOUR, // 24h in miliseconds
-  PASSWORD_RESET_EXPIRY: 1 * TIME.HOUR, // 1h in miliseconds
+  VERIFICATION_EXPIRY: 24 * TIME.HOUR, // 24h in seconds
+  PASSWORD_RESET_EXPIRY: 1 * TIME.HOUR, // 1h in seconds
 
   COOKIE_KEY: 'refreshToken',
   COOKIE_OPTIONS: {

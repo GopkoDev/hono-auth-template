@@ -54,7 +54,9 @@ export const resendVerifyEmailService = async ({
           token: verificationToken,
           pin: verificationPin,
           email,
-          expiresAt: new Date(Date.now() + AUTH_CONFIG.VERIFICATION_EXPIRY),
+          expiresAt: new Date(
+            Date.now() + AUTH_CONFIG.VERIFICATION_EXPIRY * 1000
+          ),
         },
       });
     }
