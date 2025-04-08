@@ -4,9 +4,7 @@
   "scripts": {
     "dev": "tsx watch server.ts",
     "dev-db": "docker compose up -d && tsx watch server.ts",
-    "test": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test": "vitest"
   },
   "dependencies": {
     "@hono/node-server": "^1.14.0",
