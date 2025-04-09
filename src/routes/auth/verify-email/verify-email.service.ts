@@ -2,6 +2,10 @@ import { db } from '../../../config/db.js';
 import { generateTokens, type Tokens } from '../_helpers/generate-tokens.js';
 import { Prisma, type User } from '@prisma/client';
 import { AUTH_CONFIG } from '../constants.js';
+import {
+  prepareUserForClient,
+  type SafeUser,
+} from '../../../utils/user/prepare-user.js';
 
 interface VerifyEmailServiceRequest {
   pin: string;
@@ -12,7 +16,7 @@ interface VerifyEmailServiceResponse {
   success: boolean;
   message?: string;
   tokens?: Tokens;
-  user?: Omit<User, 'password'>;
+  user?: SafeUser;
   error?: string;
   canResend?: boolean;
   email?: string;
@@ -86,13 +90,13 @@ export const verifyEmailService = async ({
       }
     );
 
-    const { password, ...userWithoutPassword } = user;
+    const safeUser = prepareUserForClient(user);
 
     return {
       success: true,
       message: 'Email verified successfully',
       tokens,
-      user: userWithoutPassword,
+      user: safeUser,
     };
   } catch (error) {
     console.error('[VERIFY EMAIL] Error:', error);

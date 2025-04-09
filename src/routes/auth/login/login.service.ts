@@ -1,9 +1,12 @@
 import { compare } from 'bcrypt';
 import { db } from '../../../config/db.js';
 import type { Tokens } from '../_helpers/generate-tokens.js';
-import type { User } from '@prisma/client';
 import { generateTokens } from '../_helpers/generate-tokens.js';
 import { AUTH_CONFIG } from '../constants.js';
+import {
+  prepareUserForClient,
+  type SafeUser,
+} from '../../../utils/user/prepare-user.js';
 
 interface LoginServiceRequest {
   email: string;
@@ -13,7 +16,7 @@ interface LoginServiceRequest {
 interface LoginServiceResponse {
   success: boolean;
   tokens?: Tokens;
-  user?: Omit<User, 'password'>;
+  user?: SafeUser;
   error?: string;
   canResend?: boolean;
 }
@@ -48,12 +51,12 @@ export const loginService = async ({
       },
     });
 
-    const { password, ...userWithoutPassword } = user;
+    const safeUser = prepareUserForClient(user);
 
     return {
       success: true,
       tokens,
-      user: userWithoutPassword,
+      user: safeUser,
     };
   } catch (error) {
     console.error('[LOGIN] Error:', error);
