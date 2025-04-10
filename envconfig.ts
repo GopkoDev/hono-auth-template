@@ -16,6 +16,9 @@ export const config = {
     nodeEnv: requireEnv('NODE_ENV'),
     frontendUrl: requireEnv('FRONTEND_URL'),
   },
+  app: {
+    name: requireEnv('APP_NAME'),
+  },
   db: {
     url: requireEnv('DATABASE_URL'),
   },

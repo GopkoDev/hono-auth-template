@@ -10,13 +10,29 @@ const {
 
 export const loginController = async (c: Context) => {
   try {
-    const { email, password } = c.get('validator').body;
+    const { email, password, mfaToken } = c.get('validator').body;
 
-    const result = await loginService({ email, inputPassword: password });
+    const result = await loginService({
+      email,
+      inputPassword: password,
+      mfaToken,
+    });
 
     if (!result.success) {
       if (result.canResend) {
         return c.json({ error: result.error, canResend: true, email }, 401);
+      }
+
+      if (result.requiresTwoFactor) {
+        return c.json(
+          {
+            error: result.error,
+            details: {
+              requiresTwoFactor: true,
+            },
+          },
+          401
+        );
       }
       return c.json({ error: result.error }, 401);
     }

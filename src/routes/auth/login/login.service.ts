@@ -1,4 +1,5 @@
 import { compare } from 'bcrypt';
+import { authenticator } from 'otplib';
 import { db } from '../../../config/db.js';
 import type { Tokens } from '../_helpers/generate-tokens.js';
 import { generateTokens } from '../_helpers/generate-tokens.js';
@@ -11,6 +12,7 @@ import {
 interface LoginServiceRequest {
   email: string;
   inputPassword: string;
+  mfaToken?: string;
 }
 
 interface LoginServiceResponse {
@@ -19,11 +21,13 @@ interface LoginServiceResponse {
   user?: SafeUser;
   error?: string;
   canResend?: boolean;
+  requiresTwoFactor?: boolean;
 }
 
 export const loginService = async ({
   email,
   inputPassword,
+  mfaToken,
 }: LoginServiceRequest): Promise<LoginServiceResponse> => {
   try {
     const user = await db.user.findUnique({ where: { email } });
@@ -38,6 +42,28 @@ export const loginService = async ({
         error: 'Email not verified',
         canResend: true,
       };
+    }
+
+    if (user.twoFactorEnabled) {
+      if (!mfaToken) {
+        return {
+          success: false,
+          requiresTwoFactor: true,
+          error: 'Two-factor authentication required',
+        };
+      }
+
+      const isValidToken = authenticator.verify({
+        secret: user.twoFactorSecret!,
+        token: mfaToken,
+      });
+
+      if (!isValidToken) {
+        return {
+          success: false,
+          error: 'Invalid two-factor code',
+        };
+      }
     }
 
     const tokens = generateTokens(user.id);

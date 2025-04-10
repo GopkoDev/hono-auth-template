@@ -5,7 +5,7 @@ export const forgotController = async (c: Context) => {
   try {
     const { email } = c.get('validator').body;
 
-    const result = await forgotService(email);
+    const result = await forgotService({ email });
 
     if (!result.success) {
       return c.json({ error: result.error }, 400);

@@ -14,12 +14,14 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  name          String?
-  email         String?        @unique
-  password      String?
-  emailVerified DateTime?      @map("email_verified")
-  refreshTokens RefreshToken[]
+  id               String         @id @default(cuid())
+  name             String?
+  email            String?        @unique
+  password         String?
+  emailVerified    DateTime?      @map("email_verified")
+  refreshTokens    RefreshToken[]
+  twoFactorEnabled Boolean        @default(false)
+  twoFactorSecret  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
