@@ -11,7 +11,11 @@ export const registrationController = async (c: Context) => {
       return c.json({ error: result.error }, 400);
     }
 
-    return c.json({ message: result.message, path: result.path });
+    return c.json({
+      success: true,
+      message: result.message,
+      path: result.path,
+    });
   } catch (error) {
     console.error('[REGISTER] Error:', error);
     return c.json({ error: 'Internal server error' }, 500);

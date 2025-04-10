@@ -12,15 +12,15 @@ export const resetPasswordMail = ({
     <title>Password Reset</title>
   </head>
   <body>
-    <table width="100%" bgcolor="hsl(132, 50%, 10%)" style="color: hsl(132, 5%, 100%); font-family: Arial, sans-serif;">
+    <table width="100%" bgcolor="#120014" style="color: hsl(132, 5%, 100%); font-family: Arial, sans-serif;">
       <tr>
         <td>
-          <table bgcolor="hsl(132, 50%, 10%)" style="color: hsl(132, 5%, 100%); padding: 2rem; border-radius: 0.5rem; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: center; max-width: 400px; margin: 0 auto;">
+          <table bgcolor="#120014" style="color: hsl(132, 5%, 100%); padding: 2rem; border-radius: 0.5rem; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); text-align: center; max-width: 400px; margin: 0 auto;">
             <tr>
               <td>
                 <h1>Password Reset</h1>
-                <p>Please click the button below to proceed with resetting your password and enter the code ${pin}.</p>
-                <a href="${url}" style="display: inline-flex; align-items: center; background-color: hsl(132, 50%, 32.9%); color: hsl(0, 0%, 100%); padding: 0.5rem 1rem; border: none; border-radius: 0.5rem; text-decoration: none; font-size: 1rem; cursor: pointer; transition: background-color 0.3s; margin-top: 1rem;">
+                <p>Please click the button below to proceed with resetting your password and enter the code <span style='font-weight: 700; font-size: 16px'>${pin}</span>.</p>
+                <a href="${url}" style="display: inline-flex; align-items: center; background-color: #7c3aed; color: hsl(0, 0%, 100%); padding: 0.5rem 1rem; border: none; border-radius: 0.5rem; text-decoration: none; font-size: 1rem; cursor: pointer; transition: background-color 0.3s; margin-top: 1rem;">
                   <span style="margin-right: 0.5rem;">
                   </span>
                   Reset Password
