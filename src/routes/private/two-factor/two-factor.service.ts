@@ -63,7 +63,7 @@ type VerifyTwoFactorServiceResponse =
   | {
       success: false;
       error: string;
-      code: 400 | 401;
+      code: 400;
     };
 
 export const verifyTwoFactorService = async ({
@@ -86,7 +86,7 @@ export const verifyTwoFactorService = async ({
   });
 
   if (!isValid) {
-    return { success: false, error: 'Invalid pin', code: 401 };
+    return { success: false, error: 'Invalid pin', code: 400 };
   }
 
   await db.user.update({
@@ -111,7 +111,7 @@ type DisableTwoFactorServiceResponse =
   | {
       success: false;
       error: string;
-      code: 404 | 401 | 500;
+      code: 404 | 400 | 500;
     };
 
 export const disableTwoFactorService = async ({
@@ -137,7 +137,7 @@ export const disableTwoFactorService = async ({
   });
 
   if (!isValid) {
-    return { success: false, error: 'Invalid pin', code: 401 };
+    return { success: false, error: 'Invalid pin', code: 400 };
   }
 
   await db.user.update({
