@@ -8,7 +8,7 @@ const TIME = {
 } as const;
 
 export const AUTH_CONFIG = {
-  ACCESS_TOKEN_EXPIRY: 1 * TIME.HOUR, // 1h in seconds
+  ACCESS_TOKEN_EXPIRY: 15 * TIME.MINUTE, // 15m in seconds
   REFRESH_TOKEN_EXPIRY: 7 * TIME.DAY, // 7d in seconds
   VERIFICATION_EXPIRY: 24 * TIME.HOUR, // 24h in seconds
   PASSWORD_RESET_EXPIRY: 1 * TIME.HOUR, // 1h in seconds
