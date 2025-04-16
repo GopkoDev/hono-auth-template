@@ -3,6 +3,7 @@ import * as qrcode from 'qrcode';
 
 import { db } from '../../../config/db.js';
 import { config } from '../../../../envconfig.js';
+import { encrypt, decrypt } from '../../../helpers/crypto.helper.js';
 
 interface GenerateTwoFactorServiceRequest {
   userId: string;
@@ -38,13 +39,14 @@ export const generateTwoFactorService = async ({
   }
 
   const secret = authenticator.generateSecret();
+  const encryptedSecret = await encrypt(secret);
   const otpauth = authenticator.keyuri(user.email!, config.app.name, secret);
   const qrCodeUrl = await qrcode.toDataURL(otpauth);
 
   await db.user.update({
     where: { id: userId },
     data: {
-      twoFactorSecret: secret,
+      twoFactorSecret: encryptedSecret,
     },
   });
 
@@ -80,8 +82,10 @@ export const verifyTwoFactorService = async ({
     };
   }
 
+  const decryptedSecret = await decrypt(user.twoFactorSecret);
+
   const isValid = authenticator.verify({
-    secret: user.twoFactorSecret!,
+    secret: decryptedSecret,
     token,
   });
 
@@ -131,8 +135,11 @@ export const disableTwoFactorService = async ({
       code: 404,
     };
   }
+
+  const decryptedSecret = await decrypt(user.twoFactorSecret);
+
   const isValid = authenticator.verify({
-    secret: user.twoFactorSecret,
+    secret: decryptedSecret,
     token,
   });
 

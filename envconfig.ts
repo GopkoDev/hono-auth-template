@@ -31,6 +31,9 @@ export const config = {
     secret: requireEnv('JWT_SECRET'),
     refreshSecret: requireEnv('REFRESH_SECRET'),
   },
+  crypto: {
+    mfaSecretKey: requireEnv('MFA_CRYPTO_SECRET_KEY'),
+  },
   smtp: {
     service: requireEnv('SMTP_SERVICE'),
     host: requireEnv('SMTP_HOST'),

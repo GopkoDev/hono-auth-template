@@ -8,6 +8,7 @@ import {
   prepareUserForClient,
   type SafeUser,
 } from '../../../utils/user/prepare-user.js';
+import { decrypt } from '../../../helpers/crypto.helper.js';
 
 interface LoginServiceRequest {
   email: string;
@@ -53,8 +54,9 @@ export const loginService = async ({
         };
       }
 
+      const decryptedSecret = await decrypt(user.twoFactorSecret!);
       const isValidToken = authenticator.verify({
-        secret: user.twoFactorSecret!,
+        secret: decryptedSecret,
         token: mfaToken,
       });
 
