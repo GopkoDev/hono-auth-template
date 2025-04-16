@@ -1,7 +1,7 @@
 import { config } from '../../../../envconfig.js';
 import { db } from '../../../config/db.js';
 import { sendEmail } from '../../../lib/sendEmail.js';
-import { verificationMail } from '../../../mails/auth/verify-email.js';
+import { renderRegistrationEmail } from '../../../mails/auth/render-registration-email.js';
 import { generateMailPin } from '../_helpers/generate-mail-pin.js';
 import { generateUuidToken } from '../_helpers/generate-uuid-token.js';
 import { AUTH_CONFIG } from '../constants.js';
@@ -65,8 +65,10 @@ export const resendVerifyEmailService = async ({
       email
     )}`;
     const verificationLink = `${config.server.frontendUrl}${verificationPath}`;
-    const emailContent = verificationMail({
-      link: verificationLink,
+
+    const emailContent = await renderRegistrationEmail({
+      username: user.name || 'User',
+      verificationUrl: verificationLink,
       pin: verificationPin,
     });
 

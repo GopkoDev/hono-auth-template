@@ -6,7 +6,8 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "types": ["node", "vitest"],
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
+    "jsx": "react",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   }
 }

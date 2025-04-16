@@ -1,7 +1,7 @@
 import { config } from '../../../../envconfig.js';
 import { db } from '../../../config/db.js';
 import { sendEmail } from '../../../lib/sendEmail.js';
-import { resetPasswordMail } from '../../../mails/auth/reset-password.js';
+import { renderResetPasswordEmail } from '../../../mails/auth/render-reset-password.js';
 import { generateMailPin } from '../_helpers/generate-mail-pin.js';
 import { generateUuidToken } from '../_helpers/generate-uuid-token.js';
 import { AUTH_CONFIG } from '../constants.js';
@@ -50,8 +50,10 @@ export const forgotService = async ({
 
     const resetPath = `/reset-password/${resetToken}`;
     const resetLink = `${config.server.frontendUrl}${resetPath}`;
-    const emailContent = resetPasswordMail({
-      url: resetLink,
+
+    const emailContent = await renderResetPasswordEmail({
+      username: user.name || 'User',
+      resetUrl: resetLink,
       pin: resetPin,
     });
 

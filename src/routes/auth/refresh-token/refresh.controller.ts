@@ -12,11 +12,7 @@ export const refreshTokenController = async (c: Context) => {
   try {
     const refreshToken = getCookie(c, COOKIE_KEY);
 
-    console.log('refreshToken', refreshToken);
-
     const result = await refreshTokenService({ refreshToken });
-
-    console.log('result', result);
 
     if (!result.success) {
       return c.json({ error: result.error }, 401);

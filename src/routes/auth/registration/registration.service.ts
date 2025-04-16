@@ -5,8 +5,8 @@ import { generateMailPin } from '../_helpers/generate-mail-pin.js';
 import { AUTH_CONFIG } from '../constants.js';
 import { Prisma } from '@prisma/client';
 import { config } from '../../../../envconfig.js';
-import { verificationMail } from '../../../mails/auth/verify-email.js';
 import { sendEmail } from '../../../lib/sendEmail.js';
+import { renderRegistrationEmail } from '../../../mails/auth/render-registration-email.js';
 
 interface RegistrationRequest {
   name: string;
@@ -64,8 +64,10 @@ export const registrationService = async ({
       email
     )}`;
     const verificationLink = `${config.server.frontendUrl}${verificationPath}`;
-    const emailContent = verificationMail({
-      link: verificationLink,
+
+    const emailContent = await renderRegistrationEmail({
+      username: name || 'User',
+      verificationUrl: verificationLink,
       pin: verificationPin,
     });
 
