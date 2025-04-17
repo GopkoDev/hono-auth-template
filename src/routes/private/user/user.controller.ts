@@ -1,8 +1,10 @@
 import type { Context } from 'hono';
 import {
   getUserService,
+  initiateEmailUpdateService,
   updatePasswordService,
   updateUserService,
+  verifyEmailUpdateService,
 } from './user.service.js';
 
 export const getUserController = async (c: Context) => {
@@ -60,6 +62,42 @@ export const updatePasswordController = async (c: Context) => {
     return c.json({ message: result.message });
   } catch (error) {
     console.error('[UPDATE PASSWORD] Error:', error);
+    return c.json({ error: 'Internal server error' }, 500);
+  }
+};
+
+export const initiateEmailUpdateController = async (c: Context) => {
+  try {
+    const userId = c.get('userId');
+    const { newEmail } = c.get('validator').body;
+
+    const result = await initiateEmailUpdateService({ userId, newEmail });
+
+    if (!result.success) {
+      return c.json({ error: result.error }, 400);
+    }
+
+    return c.json({ message: result.message, token: result.token });
+  } catch (error) {
+    console.error('[INITIATE EMAIL UPDATE] Error:', error);
+    return c.json({ error: 'Internal server error' }, 500);
+  }
+};
+
+export const verifyEmailUpdateController = async (c: Context) => {
+  try {
+    const userId = c.get('userId');
+    const { pin, token } = c.get('validator').body;
+
+    const result = await verifyEmailUpdateService({ userId, pin, token });
+
+    if (!result.success) {
+      return c.json({ error: result.error }, 400);
+    }
+
+    return c.json({ message: result.message, user: result.user });
+  } catch (error) {
+    console.error('[VERIFY EMAIL UPDATE] Error:', error);
     return c.json({ error: 'Internal server error' }, 500);
   }
 };

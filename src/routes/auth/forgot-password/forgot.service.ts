@@ -2,8 +2,8 @@ import { config } from '../../../../envconfig.js';
 import { db } from '../../../config/db.js';
 import { sendEmail } from '../../../lib/sendEmail.js';
 import { renderResetPasswordEmail } from '../../../mails/auth/render-reset-password.js';
-import { generateMailPin } from '../_helpers/generate-mail-pin.js';
-import { generateUuidToken } from '../_helpers/generate-uuid-token.js';
+import { generateMailPin } from '../../../helpers/mail-pin.helper.js';
+import { generateUuidToken } from '../../../helpers/uuid.helper.js';
 import { AUTH_CONFIG } from '../constants.js';
 
 interface ForgotServiceRequest {

@@ -41,11 +41,17 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
+enum EmailVerificationType {
+  REGISTRATION
+  EMAIL_CHANGE
+}
+
 model EmailVerificationToken {
-  id        String   @id @default(cuid())
+  id        String                @id @default(cuid())
   email     String
-  token     String   @unique
+  token     String                @unique
   pin       String
+  type      EmailVerificationType
   expiresAt DateTime
 
   createdAt DateTime @default(now())

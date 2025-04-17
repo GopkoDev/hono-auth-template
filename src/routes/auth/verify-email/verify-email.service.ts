@@ -37,7 +37,7 @@ export const verifyEmailService = async ({
 
     if (verificationToken.expiresAt < new Date()) {
       await db.emailVerificationToken.delete({
-        where: { token },
+        where: { token, type: 'REGISTRATION' },
       });
 
       return {

@@ -2,8 +2,8 @@ import { config } from '../../../../envconfig.js';
 import { db } from '../../../config/db.js';
 import { sendEmail } from '../../../lib/sendEmail.js';
 import { renderRegistrationEmail } from '../../../mails/auth/render-registration-email.js';
-import { generateMailPin } from '../_helpers/generate-mail-pin.js';
-import { generateUuidToken } from '../_helpers/generate-uuid-token.js';
+import { generateMailPin } from '../../../helpers/mail-pin.helper.js';
+import { generateUuidToken } from '../../../helpers/uuid.helper.js';
 import { AUTH_CONFIG } from '../constants.js';
 
 interface ResendVerificationEmailRequest {
@@ -34,7 +34,7 @@ export const resendVerifyEmailService = async ({
     const verificationPin = generateMailPin();
 
     const existingToken = await db.emailVerificationToken.findFirst({
-      where: { email },
+      where: { email, type: 'REGISTRATION' },
     });
 
     if (existingToken) {
@@ -54,6 +54,7 @@ export const resendVerifyEmailService = async ({
           token: verificationToken,
           pin: verificationPin,
           email,
+          type: 'REGISTRATION',
           expiresAt: new Date(
             Date.now() + AUTH_CONFIG.VERIFICATION_EXPIRY * 1000
           ),
