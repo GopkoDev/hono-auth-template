@@ -18,7 +18,7 @@ export const AUTH_CONFIG = {
     httpOnly: true,
     secure: config.server.nodeEnv === 'development' ? false : true,
     sameSite: 'Lax',
-    path: '/api/auth',
+    path: '/api',
     maxAge: 7 * TIME.DAY,
   },
 } as const;
